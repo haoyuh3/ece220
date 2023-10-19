@@ -1,0 +1,211 @@
+PUT YOUR MP7 REPORT IN THIS FILE.
+---------------------------------
+Function1 printREV
+ Part1: bugs
+
+Execution: 1) test case: hy
+           Output "hy" reversed is "yh" (length -16777214)
+           Expected output "hy" reversed is "yh" (length 2)
+
+           2)test case: hello
+           Output "hello" reversed is "olloeh" (length 32772)
+           Expected output "hello" reversed is "olloeh" (length 5)
+
+           3)test case: zjui
+           Output "zjui" reversed is "lujz" (length 32771)
+           Expected Output "zjui" reversed is "lujz" (length 4)
+
+Part2 trace bug:
+Breakpoint  I set breakpoint at 40. Command is b pr_buggy.c:52
+Result is breakpoint 1 at 0x1199: file pr_buggy.c, line 52
+              
+          r hy
+          S displat rest _______> and continue    the result is -16777216 -16777215 -16777214
+
+Part3 analysis of the bug:
+
+It is obvious that res can not be 32767 when we execute the function however it should return 0. I think it is caused by bad initialization which. means print_reverse has not initialize the rest to 0. So wide should initialize rest at the start of the function
+
+
+
+
+
+Function 2 primeNumber
+Part1 bugs:
+  
+
+
+          Test :   r
+   
+	2 is prime     ------>number like 4 9 25 and 49 are not primes             
+	3 is prime         
+	4 is prime
+	5 is prime
+	7 is prime
+	9 is prime
+	11 is prime
+         .......
+         .......
+         25 is prime 
+         ....
+         49 is prime 
+
+          2 is prime     ------>number like 25 and 49 are not primes             
+	3 is prime         
+	5 is prime
+	7 is prime
+	11 is prime
+
+       4 and 9 is not prime I guess The is_prime() function judged them wrongly.
+
+
+
+Part2 trace bug 
+ 
+
+                 1 set break point at line 67  gdb command b primeNUmber.c:67 
+                  Then run the program and keeping typing c
+
+                                    --> print 2 is prime 
+ 				             3 is prime 
+					     4 is prime
+
+
+
+                 
+
+                 GDB output
+
+                 I will use number 9 and 25 as example
+    
+                 Breakpoint 1, divides_evently(divisor=2,value=9) at primeNumber.c:67
+                 67           multiple = (value/divisor)*divisor;
+
+When 25
+                 Breakpoint 1, divides_evently(divisor=2,value=25) at primeNumber.c:67
+                 67           multiple = (value/divisor)*divisor;
+ 
+                  Breakpoint 1, divides_evently(divisor=3,value=25) at primeNumber.c:67
+                 67           multiple = (value/divisor)*divisor;
+
+
+                  Breakpoint 1, divides_evently(divisor=4,value=25) at primeNumber.c:67
+                 67           multiple = (value/divisor)*divisor;
+
+
+  
+                  Display value and divisor
+		When value equal to 9 the divisor is 1 and 2    
+
+		value=9
+		divisor=1	
+		value=9
+		divisor=2. Then it move to next breakpoint so the problem is that we forget 3 and  when value is 25 we have the same problem
+
+
+
+Part3 solve the bug
+
+
+                In my opinion, the bug occur in the function which is used to detect prime. And the problem is that there are not enough divisors so that we can not judge whether it is prime.which means is_prime 
+               only loop [2 sqrt(x)) but we need [2,sqrt(x)]
+                Since we Have divide_evently function so we need to call it correctly.   I may solve the bug by changing the loop in is_prime function
+                I guess in this function there is a loop to loop all the divisor. So I will change the the loop. 
+
+                 int i;
+		i=int(sqrt(value));
+                 For (int j=2;j<=I;j++) ---->the divisor should from 2 to sqrt(value)
+
+
+Function 3 sort
+
+Part1 test:
+
+
+
+          Input data 
+ 
+
+           4 
+           97 52 6 23
+  
+          Output 
+           
+          6 23 52 52
+          Expected output : 6 23 52 97
+
+--------------------------------------
+           Input data 
+           4 
+           97 52 6 23
+
+            Output 
+           
+          6 23 23 52
+          Expected output : 6 23 52 97
+
+
+
+--------------------------------------
+
+
+It seems that this program do not provide the same output for the same input. Sometimes it will be correct and sometimes it is wrong and the output is not always same.
+
+  GDB command:
+        b sort.c:25
+        r test4.txt 
+        display i
+        display *arr@5 (to view arr[0] -- arr[4]) and keep typing c
+
+
+Some output
+        Breakpoint 1, heapify (arr=0x55555555a490, n=4, i=0) at sort.c:25
+        25	    if (l < n && arr[l] > arr[largest])
+        3: i = 0
+        4: *arr@5 = {97, 52, 6, 23, 23}
+        (gdb) 
+        Continuing.
+
+
+
+
+        Breakpoint 1, heapify (arr=0x55555555a490, n=4, i=0) at sort.c:25
+        25	    if (l < n && arr[l] > arr[largest])
+        3: i = 0
+        4: *arr@5 = {23, 52, 6, 23, 97}
+        (gdb) 
+        Continuing.
+
+I can find that there will be a random number in arr[5] which is useless and we don't care about
+
+        Our output should be:
+          Breakpoint 1, heapify (arr=0x55555555a490, n=4, i=0) at sort.c:25
+        25	    if (l < n && arr[l] > arr[largest])
+        3: i = 0
+        4: *arr@5 = {23, 52, 6, 97,x}. (We don't care about x)
+        (gdb) 
+        Continuing.
+
+
+
+
+Analyze and solve
+        If N = 4 is the length of the input array, then only a[0] to a[N - 1 == 3] are needed to be filled.
+        If we use a[5] then, there is a random value in a[4].
+        When doing the heap sort, we swap a[0] and a[n]
+        (n from N - 1 to 0, it means the current index we need to make sure)
+        However, this program swap a[0] and a[N] in the first case, which is definitely wrong.
+        A bug will occur when the random value a[N] is not the same as max{a[i], i belongs [0, n - 1]}
+        So we should only swap a[0] and a[n-1] n is length
+
+
+
+
+
+
+
+
+
+
+
+   
